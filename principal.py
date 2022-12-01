@@ -471,7 +471,7 @@ class ImportsPage(tk.Frame):
       canvas.create_window((0,0), window=container, anchor=tk.NW)
       dados = get_data('import')
       for i, dado in enumerate(dados):
-         txt = tk.Text(container, height=15, width=50, pady=5, padx=10)
+         txt = tk.Text(container, height=10, width=50, pady=5, padx=10)
          ins = ''
          for key, value in dado.to_dict().items():
             ins = ins + f"{key}: {value}\n"
@@ -506,7 +506,9 @@ class ImportarDadosPage(tk.Frame):
                doc = json.load(arq)
                file.extend(doc)
             for f in file:
-               importar_dados('import', dict(f))
+               imp = dict(f)
+               imp['user'] = str(login_ent['uid'])
+               importar_dados('import', imp)
             show_data_toplevel(self, file)
             messagebox.showinfo('Importação', 'Dados Importados.')
          except json.decoder.JSONDecodeError:
