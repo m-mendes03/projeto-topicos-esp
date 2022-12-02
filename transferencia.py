@@ -25,19 +25,19 @@ def set_values(ent, db):
     })
     
     # previne a adição de contas duplicadas
-    get_conta = db.collection('conta').where('nm_conta', '==', conta).get()
+    get_conta = db.collection('conta').where('user', '==', user).where('nm_conta', '==', conta).get()
     if (len(get_conta) == 0):
         db.collection('conta').document().set({
             'user': user,
             'nm_conta': conta,
             'dt_created': dt.datetime.now(),
-            'dt_updated': dt.datetime.now()
+            'dt_updated': ''
         })
-    get_conta_destino = db.collection('conta').where('nm_conta', '==', conta_destino).get()
+    get_conta_destino = db.collection('conta').where('user', '==', user).where('nm_conta', '==', conta_destino).get()
     if (len(get_conta_destino) == 0):
         db.collection('conta').document().set({
             'user': user,
             'nm_conta': conta,
             'dt_created': dt.datetime.now(),
-            'dt_updated': dt.datetime.now()
+            'dt_updated': ''
         })

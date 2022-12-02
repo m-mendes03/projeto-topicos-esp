@@ -24,21 +24,21 @@ def set_values(ent, db):
         'dt_updated': dt_updated
     })
     # previne a adição de categorias duplicadas
-    get_categoria = db.collection('categoria').where('nm_categoria', '==', categoria).get()
+    get_categoria = db.collection('categoria').where('user', '==', user).where('nm_categoria', '==', categoria).get()
     if (len(get_categoria) == 0):
         db.collection('categoria').document().set({
             'user': user,
             'nm_categoria': categoria,
             'dt_created': dt.datetime.now(),
-            'dt_updated': dt.datetime.now()
+            'dt_updated': ''
         })
 
     # previne a adição de contas duplicadas
-    get_conta = db.collection('conta').where('nm_conta', '==', conta).get()
+    get_conta = db.collection('conta').where('user', '==', user).where('nm_conta', '==', conta).get()
     if (len(get_conta) == 0):
         db.collection('conta').document().set({
             'user': user,
             'nm_conta': conta,
             'dt_created': dt.datetime.now(),
-            'dt_updated': dt.datetime.now()
+            'dt_updated': ''
         })

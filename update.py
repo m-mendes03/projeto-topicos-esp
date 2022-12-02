@@ -15,7 +15,7 @@ def update_values(db, ent, id):
 
     # previne a adição de categorias e contas duplicadas diferenciando transferência de despesa e receita
     db.collection('registro').document(id).update(dit)
-    get_conta = db.collection('conta').where('nm_conta', '==', conta).get()
+    get_conta = db.collection('conta').where('user', '==', user).where('nm_conta', '==', conta).get()
     if (len(get_conta) == 0):
         db.collection('conta').document().set({
             'user': user,
@@ -24,7 +24,7 @@ def update_values(db, ent, id):
             'dt_updated': dt.datetime.now()
         })
     if ent['tipo'] == 'Transferência':
-        get_conta_destino = db.collection('conta').where('nm_conta', '==', conta_destino).get()
+        get_conta_destino = db.collection('conta').where('user', '==', user).where('nm_conta', '==', conta_destino).get()
         if (len(get_conta_destino) == 0):
             db.collection('conta').document().set({
                 'user': user,
@@ -33,7 +33,7 @@ def update_values(db, ent, id):
                 'dt_updated': dt.datetime.now()
             })
     else:
-        get_categoria = db.collection('categoria').where('nm_categoria', '==', categoria).get()
+        get_categoria = db.collection('categoria').where('user', '==', user).where('nm_categoria', '==', categoria).get()
         if (len(get_categoria) == 0):
             db.collection('categoria').document().set({
                 'user': user,
