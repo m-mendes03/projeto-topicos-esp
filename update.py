@@ -1,13 +1,11 @@
 import datetime as dt
 
+# Função para atualizar os valores de um documento no banco
 def update_values(db, ent, id):
     dit = {}
     for key, value in ent.items():
         dit[key.lower()] = value
-    print(dit)
-
     user = ent['user']
-
     if ent['tipo']=='Transferência':
         conta = ent['conta']
         conta_destino = ent['conta_destino']
@@ -15,8 +13,8 @@ def update_values(db, ent, id):
         categoria = ent['categoria']
         conta = ent['conta']
 
+    # previne a adição de categorias e contas duplicadas diferenciando transferência de despesa e receita
     db.collection('registro').document(id).update(dit)
-
     get_conta = db.collection('conta').where('nm_conta', '==', conta).get()
     if (len(get_conta) == 0):
         db.collection('conta').document().set({

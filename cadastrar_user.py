@@ -2,12 +2,11 @@ from firebase_admin import auth
 import google
 import datetime as dt
 
+# Função para criar um usuário
 def create_user(db, ent):
-
     email = ent['email']
     password = ent['senha']
     nome = ent['nome']
-
     try:
         user = auth.create_user(email=email, password=password)
         db.collection('user').document().set({

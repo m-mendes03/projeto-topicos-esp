@@ -1,5 +1,6 @@
 import datetime as dt
 
+# Função para iserir um documento de transferência no banco
 def set_values(ent, db):
     user = ent['user']
     valor = ent['valor']
@@ -22,7 +23,8 @@ def set_values(ent, db):
         'dt_created': dt_created,
         'dt_updated': dt_updated
     })
-
+    
+    # previne a adição de contas duplicadas
     get_conta = db.collection('conta').where('nm_conta', '==', conta).get()
     if (len(get_conta) == 0):
         db.collection('conta').document().set({

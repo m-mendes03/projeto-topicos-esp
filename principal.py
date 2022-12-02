@@ -14,28 +14,39 @@ import transferencia
 import cadastrar_user
 import update
 
-
+# Função para pegar os documentos no banco
 def get_data(collection):
    #return db.collection(collection).order_by('dt_valor').get()
    # Retorna os registros por usuário
    return db.collection(collection).where('user', '==', str(login_ent['uid'])).get()
 
+# Função para pegar apenas as despesas
 def get_despesas():
    return db.collection('registro').where('tipo', '==', 'Despesa').where('user', '==', str(login_ent['uid'])).get()
+
+# Função para pegar apenas as receitas
 def get_receitas():
    return db.collection('registro').where('tipo', '==', 'Receita').where('user', '==', str(login_ent['uid'])).get()
 
+# Função para selecionar um documento pelo id
 def get_data_by_id(collection, id):
    return db.collection(collection).document(id).get()
 
+# Função para pegar o user uid pelo email
 def get_user_uid(ent):
    user = login.user_uid(str(ent['Email'].get()))
    return user
 
+# Função para inserir dados em formato de dicionário no banco
 def importar_dados(collection, ent):
    db.collection(collection).document().set(ent)
 
-def update_doc(frame, id):
+# Função para deletar um documento pelo id
+def deletar_doc_id(collection, id):
+   db.collection(collection).document(id).delete()
+
+# Função para atualizar os valores de um documento
+def update_doc(frame, parent, id):
    container = tk.Toplevel(frame)
    container.title('Update')
       
@@ -99,10 +110,12 @@ def update_doc(frame, id):
          'dt_updated': str(dt.datetime.now())
          }
       update.update_values(db, ent, id)
+      main.atualizarframes(parent)
+      main.show(ExtratoPage)
       messagebox.showinfo(tipo, tipo + ' atualizada.')
       container.destroy()
 
-
+# Função para apresentar os dados em nova janela após a importação
 def show_data_toplevel(frame, dados):
    win = tk.Toplevel(frame)
    win.geometry("670x400")
@@ -128,6 +141,7 @@ def show_data_toplevel(frame, dados):
    container.update_idletasks()
    canvas.config(scrollregion=canvas.bbox(tk.ALL))
 
+# Dicionário para armazenar dados do usuário durante a sessão
 global login_ent
 login_ent = {}
 # Tela de login
@@ -240,6 +254,7 @@ class DespesaPage(tk.Frame):
          'dt_updated': str(dt.datetime.now())
          }
          despesa.set_values(ent, db)
+         controller.atualizarframes(parent)
          messagebox.showinfo('Despesa', 'Despesa inserida.')
          controller.show(HomePage)
 
@@ -294,6 +309,7 @@ class ReceitaPage(tk.Frame):
          'dt_updated': str(dt.datetime.now())
          }
          receita.set_values(ent, db)
+         controller.atualizarframes(parent)
          messagebox.showinfo('Receita', 'Receita inserida.')
          controller.show(HomePage)
 
@@ -348,6 +364,7 @@ class TransferPage(tk.Frame):
          'dt_updated': str(dt.datetime.now())
          }
          transferencia.set_values(ent, db)
+         controller.atualizarframes(parent)
          messagebox.showinfo('Transferência', 'Transferência inserida.')
          controller.show(HomePage)
 
@@ -426,10 +443,10 @@ class ExtratoPage(tk.Frame):
       tk.Frame.__init__(self, parent, *args, **kwargs)
       
       def deletar_registro(id):
-         db.collection('registro').document(id).delete()
+         deletar_doc_id('registro', id)
+         controller.atualizarframes(parent)
+         controller.show(ExtratoPage)
          messagebox.showinfo('Deletar registro', 'Registro deletado.')
-
-      # REFRESH DATA
 
       self.grid_rowconfigure(0, weight=1)
       self.grid_columnconfigure(0, weight=1)
@@ -449,7 +466,7 @@ class ExtratoPage(tk.Frame):
          txt.insert(tk.INSERT, ins)
          txt.config(state='disabled')
          txt.grid(row=i, column=0)
-         tk.Button(container, text='Ver', command=(lambda d=dado: update_doc(self, d.id))).grid(row=i, column=1)
+         tk.Button(container, text='Ver', command=(lambda d=dado: update_doc(self, parent, d.id))).grid(row=i, column=1)
          tk.Button(container,  text='Deletar', command=(lambda d=dado: deletar_registro(d.id))).grid(row=i, column=2)
       container.update_idletasks()
       canvas.config(scrollregion=canvas.bbox(tk.ALL))
@@ -461,7 +478,11 @@ class ImportsPage(tk.Frame):
       self.grid_rowconfigure(0, weight=1)
       self.grid_columnconfigure(0, weight=1)
       self.grid_propagate(False)
-      
+      def deletar_registro(id):
+         deletar_doc_id('import', id)
+         controller.atualizarframes(parent)
+         controller.show(ImportsPage)
+         messagebox.showinfo('Deletar registro', 'Registro deletado.')
       canvas = tk.Canvas(self)
       canvas.grid(row=0, column=0, sticky=tk.NSEW)
       scroll = tk.Scrollbar(self, orient=tk.VERTICAL, command=canvas.yview)
@@ -478,6 +499,8 @@ class ImportsPage(tk.Frame):
          txt.insert(tk.INSERT, ins)
          txt.config(state='disabled')
          txt.grid(row=i, column=0)
+         tk.Button(container,  text='Deletar', command=(lambda d=dado: deletar_registro(d.id))).grid(row=i, column=2)
+         #tk.Button(container,  text='Deletar', command=(lambda d=dado: print(d.id))).grid(row=i, column=2)
 
       container.update_idletasks()
       canvas.config(scrollregion=canvas.bbox(tk.ALL))
@@ -510,6 +533,7 @@ class ImportarDadosPage(tk.Frame):
                imp['user'] = str(login_ent['uid'])
                importar_dados('import', imp)
             show_data_toplevel(self, file)
+            controller.atualizarframes(parent)
             messagebox.showinfo('Importação', 'Dados Importados.')
          except json.decoder.JSONDecodeError:
             messagebox.showerror('Erro', 'Formato de arquivo não suportado.')
@@ -530,7 +554,7 @@ class ImportarDadosPage(tk.Frame):
 class MainPage(tk.Tk):
    def __init__(self, *args, **kwargs):
       tk.Tk.__init__(self, *args, **kwargs)
-      self.title('Aplicativo')
+      self.title('Aplicativo Finanças')
       self.geometry('800x600')
 
       self.menu = tk.Menu(self)
@@ -577,12 +601,22 @@ class MainPage(tk.Tk):
       self.files.entryconfig(1, state='normal')
       self.menu.entryconfig(2, state='normal')
       self.menu.entryconfig(3, state='normal')
+   def atualizarframes(self, container):
+      for f in (HomePage, DespesaPage, ReceitaPage, TransferPage, ExtratoPage, ImportsPage):
+         frame = f(container, self)
+         self.frames[f] = frame
+      self.files.entryconfig(0, state='normal')
+      self.files.entryconfig(1, state='normal')
+      self.menu.entryconfig(2, state='normal')
+      self.menu.entryconfig(3, state='normal')
 
+# Variável para armazenar o aplicativo do firebase
 global app_firebase
+# Variável para armazenar o cliente do banco firestore
 global db
 app_firebase = fc.Firestore_Connection.firebase_initialize()
 db = fc.Firestore_Connection.firestore_client(app_firebase)
 
+# Aplicativo
 main = MainPage()
-
 main.mainloop()
